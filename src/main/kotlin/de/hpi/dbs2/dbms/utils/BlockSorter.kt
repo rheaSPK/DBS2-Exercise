@@ -10,6 +10,7 @@ import de.hpi.dbs2.dbms.Tuple
 object BlockSorter {
     /**
      * sorts the given blocks' tuples "in-place" by the given column index
+     * // wieso braucht es die relation
      */
     fun sort(relation: Relation, blocks: List<Block>, tupleComparator: Comparator<Tuple>) {
         val blockSize = blocks.first().size
