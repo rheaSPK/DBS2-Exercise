@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class InnerNode extends BPlusTreeNode<BPlusTreeNode<?>> {
+public non-sealed class InnerNode extends BPlusTreeNode<BPlusTreeNode<?>> {
     public InnerNode(int order, BPlusTreeNode<?>... nodes) {
         super(order);
         references = new BPlusTreeNode[order];

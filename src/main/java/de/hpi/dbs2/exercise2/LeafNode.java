@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class LeafNode extends BPlusTreeNode<ValueReference> {
+public non-sealed class LeafNode extends BPlusTreeNode<ValueReference> {
     public LeafNode nextSibling;
 
     public LeafNode(int order, AbstractBPlusTree.Entry... entries) {

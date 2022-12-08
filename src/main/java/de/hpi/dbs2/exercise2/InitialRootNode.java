@@ -7,7 +7,7 @@ import java.util.Objects;
  * A specialized LeafNode with different validation criteria (otherwise identical to a LeafNode).
  * Should only be used as a root node for trees which are small enough to fit in one node!
  */
-public final class InitialRootNode extends LeafNode {
+public class InitialRootNode extends LeafNode {
     public InitialRootNode(int order, AbstractBPlusTree.Entry... entries) {
         super(order, entries);
     }
