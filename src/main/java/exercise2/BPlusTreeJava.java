@@ -88,11 +88,11 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         addToNode(newNode, key, value)
         */
         BPlusTreeNode originalNode = leaf;
-        BPlusTreeNode currentNode = BPlusTreeNode.buildTree(leaf.order + 1, leaf.getEntries().toArray());
+        BPlusTreeNode currentNode = BPlusTreeNode.buildTree(rootNode.order + 1, leaf.getEntries().toArray());
         addToNode(currentNode, key, value);
         while (true){
             //split
-            BPlusTreeNode[] split = splitNode(currentNode, leaf.order);
+            BPlusTreeNode[] split = splitNode(currentNode, rootNode.order);
             BPlusTreeNode n1 = split[0];
             BPlusTreeNode n2 = split[1];
             /*
@@ -102,7 +102,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             - wurzel value auf N1 und N2 setzen
              */
             if (path.isEmpty()){
-                InnerNode new_root = new InnerNode(currentNode.order);
+                InnerNode new_root = new InnerNode(rootNode.order);
                 new_root.keys[0] = n2.getSmallestKey();
                 new_root.references[0] = n1;
                 new_root.references[1] = n2;
@@ -128,58 +128,32 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             if (currentNode instanceof LeafNode) {
                 ((LeafNode) n1).nextSibling = (LeafNode) n2;
             }
-                BPlusTreeNode parent = path.pop();
-                Boolean parentWasFull = false;
-                if (parent.isFull()){
-                    // Todo: this doesnt work
-                    parentWasFull = true;
-                    originalNode = parent;
-                    // kopiere Parent in Parent mit einer größeren Order
-                    parent = copyNode(parent, parent.order + 1);
-                }
-                Integer pos = getNodePosition(parent, originalNode);
-                if (pos == null){
-                    throw new Error("node isn't in parent");
-                }
-                parent.keys[pos] = n2.getSmallestKey();
-                parent.references[pos] = n1;
-                // Add keys
-                addToPosition(pos + 1, parent, n2);
-                if (!parentWasFull){
-                    return value;
-                }
-            } else {
-                //Todo: original node anpassen
-                    /*
-                    N ist kein Blatt
-                - parent = path.pop
-                - pos = Position wo altes N war
-                - parent.keys[pos] = biggestN1;
-                - aus N1 biggest key entfernen
-                - parent.references[pos] = left;
-                - parent.references[pos+1] = right;
-                - alles nach rechts verschieben
-                  */
-                BPlusTreeNode parent = path.pop();
-                Boolean parentWasFull = false;
-                if (parent.isFull()){
-                    parentWasFull = true;
-                    originalNode = parent;
-                    // kopiere Parent in Parent mit einer größeren Order
-                    parent = copyNode(parent, parent.order + 1);
-                }
-                Integer pos = getNodePosition(parent, originalNode);
-                if (pos == null){
-                    throw new Error("node isn't in parent");
-                }
-                Integer biggestN1Key = getBiggestKey(currentNode);
-                parent.keys[pos] = biggestN1Key;
-                parent.references[pos] = n1;
-                addToPosition(pos + 1, parent, n2);
-                if (!parentWasFull){
-                    return value;
-                }
+            BPlusTreeNode parent = path.pop();
+            Boolean parentWasFull = false;
+            BPlusTreeNode tmpParent = parent;
+            if (parent.isFull()){
+                // Todo: this doesnt work
+                parentWasFull = true;
+                // kopiere Parent in Parent mit einer größeren Order
+                parent = copyInnerNode((InnerNode) parent, rootNode.order + 1);
             }
+            Integer pos = getNodePosition(parent, originalNode);
+            if (pos == null){
+                throw new Error("node isn't in parent");
+            }
+            if (currentNode instanceof LeafNode){
+                parent.keys[pos] = n2.getSmallestKey();
+            } else {
+                parent.keys[pos] = getBiggestKey(n1);
+            }
+            parent.references[pos] = n1;
+            // Add keys
+            addToPosition(pos + 1, parent, n2);
+            if (!parentWasFull){
+                return value;
+            }
+            currentNode = parent;
+            originalNode = tmpParent;
 
         }
         /*
@@ -268,17 +242,16 @@ public class BPlusTreeJava extends AbstractBPlusTree {
     }
 
     // todo thats bs
-    private BPlusTreeNode copyNode(BPlusTreeNode node, int order){
-        ArrayList entries = new ArrayList<Entry>();
-        for (int i = 0; i < node.keys.length; i++){
-            entries.add(new AbstractBPlusTree.Entry(node.keys[i], (ValueReference) node.references[i]));
-        }
-        return BPlusTreeNode.buildTree(order, entries.toArray());
+    private BPlusTreeNode copyInnerNode(InnerNode node, int order){
+        return new InnerNode(order, node.references);
     }
 
     private Integer getBiggestKey(BPlusTreeNode node){
         Integer max = node.keys[0];
         for(Integer key : node.keys){
+            if (key == null){
+                break;
+            }
             if (key > max){
                 max = key;
             }
@@ -323,7 +296,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
     }
 
     private Integer addToPosition(Integer pos, BPlusTreeNode node, BPlusTreeNode value){
-        if (pos > 0){
+        if (pos > 0 && node.references[pos] != null){
             Integer key = ((BPlusTreeNode) node.references[pos]).getSmallestKey();
             return addToPosition(pos, node, key, value);
         }
@@ -391,6 +364,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         }
 
         currentParentNode = (InnerNode) rootNode;
+        path.push(currentParentNode);
         while (true){
             BPlusTreeNode childNode = currentParentNode.selectChild(key);
             path.push(childNode);
