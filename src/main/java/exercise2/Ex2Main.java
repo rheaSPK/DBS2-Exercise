@@ -21,11 +21,11 @@ public class Ex2Main {
                 }
             },
             new AbstractBPlusTree.Entry[][]{
-                new AbstractBPlusTree.Entry[]{
-                    new AbstractBPlusTree.Entry(13, new ValueReference(5)),
-                    new AbstractBPlusTree.Entry(17, new ValueReference(6)),
-                    new AbstractBPlusTree.Entry(19, new ValueReference(7))
-                },
+//                new AbstractBPlusTree.Entry[]{
+//                    new AbstractBPlusTree.Entry(13, new ValueReference(5)),
+//                    new AbstractBPlusTree.Entry(17, new ValueReference(6)),
+//                    new AbstractBPlusTree.Entry(19, new ValueReference(7))
+//                },
                 new AbstractBPlusTree.Entry[]{
                     new AbstractBPlusTree.Entry(23, new ValueReference(8)),
                     new AbstractBPlusTree.Entry(29, new ValueReference(9))
@@ -44,6 +44,9 @@ public class Ex2Main {
         System.out.println(root);
 
         AbstractBPlusTree tree = new BPlusTreeJava(root);
+        tree.insert(30,new ValueReference(4));
+        tree.insert(28, new ValueReference(5));
+        tree.insert(42, new ValueReference(5));
         System.out.println(tree);
 
         /*

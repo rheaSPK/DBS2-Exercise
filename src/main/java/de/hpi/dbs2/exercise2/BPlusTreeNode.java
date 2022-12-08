@@ -9,7 +9,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public sealed abstract class BPlusTreeNode<V> permits InnerNode, LeafNode {
+//removed sealed class for the ide
+public abstract class BPlusTreeNode<V> {
     /**
      * Allowed number of direct child nodes, also known as branching factor.
      */
