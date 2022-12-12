@@ -89,6 +89,7 @@ public class BPlusTreeJava extends AbstractBPlusTree {
         */
         BPlusTreeNode originalNode = leaf;
         BPlusTreeNode currentNode = BPlusTreeNode.buildTree(rootNode.order + 1, leaf.getEntries().toArray());
+        ((LeafNode) currentNode).nextSibling = leaf.nextSibling;
         addToNode(currentNode, key, value);
         while (true){
             //split
@@ -101,6 +102,10 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             - N2.getsmallestKey als key setzen
             - wurzel value auf N1 und N2 setzen
              */
+            if (currentNode instanceof LeafNode) {
+                ((LeafNode) n1).nextSibling = (LeafNode) n2;
+            }
+
             if (path.isEmpty()){
                 InnerNode new_root = new InnerNode(rootNode.order);
                 new_root.keys[0] = n2.getSmallestKey();
@@ -125,9 +130,6 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             - setze für nächsten Schleifendurchlauf N = parent
              */
 
-            if (currentNode instanceof LeafNode) {
-                ((LeafNode) n1).nextSibling = (LeafNode) n2;
-            }
             BPlusTreeNode parent = path.pop();
             Boolean parentWasFull = false;
             BPlusTreeNode tmpParent = parent;
@@ -149,6 +151,16 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             parent.references[pos] = n1;
             // Add keys
             addToPosition(pos + 1, parent, n2);
+
+            if (currentNode instanceof LeafNode){
+                for(int i = 0; i < parent.references.length - 1; i++){
+                    if(parent.references[i] == null){
+                        continue;
+                    }
+                    ((LeafNode) parent.references[i]).nextSibling = (LeafNode) parent.references[i+1];
+                }
+            }
+
             if (!parentWasFull){
                 return value;
             }
@@ -281,13 +293,20 @@ public class BPlusTreeJava extends AbstractBPlusTree {
             leftNode = new LeafNode(order);
             rightNode = new LeafNode(order);
         }
-        for (int i = 0; i < node.n; i++) {
-            if (i < node.n/2){
+        for (int i = 0; i < node.order; i++) {
+            if (i < (int) Math.ceil(node.n/2)){
                 leftNode.keys[i] = node.keys[i];
                 leftNode.references[i] = node.references[i];
-            } else {
-                int index = i - node.n/2;
+            } else if (i < node.n){
+                int index = i - (int) Math.ceil(node.n/2);
                 rightNode.keys[index] = node.keys[i];
+                rightNode.references[index] = node.references[i];
+            } else {
+                if (node instanceof LeafNode){
+                    // then n == order
+                    break;
+                }
+                int index = i - (int) Math.ceil(node.n/2);
                 rightNode.references[index] = node.references[i];
             }
         }
